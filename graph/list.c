@@ -84,6 +84,20 @@ void print_list(vec_t v) {
   }
 }
 
+void print_name_list(vec_t v) {
+  int i;
+  list_t * l;
+  for(i = 0; i < v.nbn; i++) {
+    printf("%s: ",v.n[i].name);
+    l = v.n[i].l;
+    while(l) {
+      printf("%s(%d), ", v.n[l->an->in].name, l->v);
+      l = l->succ;
+    }
+    printf("\n");
+  }
+}
+
 /**
  * \brief Libérer la structure représentant la liste de successeurs.
  *
@@ -101,16 +115,28 @@ void free_list(vec_t v) {
   }
 }
 
-void generate_list(vec_t v) {
-  srand(time(NULL));
-  int i, ri, rv, rsucc;
-  for(i = 0; i < v.nbn; i++) {
-    rsucc = rand() % 4;
-    while(rsucc) {
-      ri = rand() % v.nbn;
-      rv = my_rand(1, VAL);
-      add_succ(&v.n[i].l, &v.n[ri], rv);
-      rsucc--;
+vec_t generate_list(data_t * data, int n) {
+  vec_t vec;
+  vec.n = (node_t *)malloc(n * sizeof(*vec.n));
+  assert(vec.n);
+  vec.nbn = n;
+
+  int i, j, k;
+  for(i = 0; i < n; i++) {
+    vec.n[i].name = strdup(data[i].room);
+    vec.n[i].in = i;
+    vec.n[i].l = (list_t *)malloc(sizeof(*vec.n[i].l));
+    vec.n[i].l = NULL; 
+  }
+
+  for(i = 0; i < n; i++) {
+    for(j = 0; j < data[i].nbn; j++) {
+      for(k = 0; k < n; k++) {
+        if(!strcmp(data[k].room, data[i].neigh[j])) {
+          add_succ(&vec.n[i].l, &vec.n[k], data[i].v[j]);
+        }
+      }
     }
   }
+  return vec;
 }

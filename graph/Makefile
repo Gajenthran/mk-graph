@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS=-Wall
-SRC=pcc.c fstack.c list.c
+SRC=pcc.c fstack.c list.c parser.c djikstra.c
 OBJ=$(SRC:.c=.o)
 
 %.o:	%.c

@@ -1,6 +1,7 @@
 #ifndef LIST_H_
 #define LIST_H_
 
+#include "parser.h"
 #define VAL 5
 
 /** \brief Structure représentant la liste de successeurs */
@@ -14,6 +15,7 @@ struct list {
 /** \brief Structure représentant un noeud */
 typedef struct node node_t;
 struct node {
+  char * name;
   int in;              /*!< Indice du noeud */
   struct list * l;      /*!< Liste des successeurs */
 };
@@ -26,9 +28,10 @@ struct vec {
 };
 
 vec_t       create_list(int nbn);
-void        generate_list(vec_t v);
+vec_t       generate_list(data_t * data, int n);
 void        add_succ(list_t ** l, node_t * adrn, int v);
 void        print_list(vec_t v);
+void        print_name_list(vec_t v);
 void        free_list(vec_t v);
 int         my_rand(int min, int max);
 

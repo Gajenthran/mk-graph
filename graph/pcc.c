@@ -6,43 +6,51 @@
  * pointeur de fonction
  * remove the infinity
  * remove ll
+ * argv
+ */
+
+/*
+ * - Représentation d'un labyrinthe -
+ * Voici la modélisation d'un labyrinthe à travers un graphe orienté.
+ * Chaque salle donne accès (ou non) à une autre salle, il est parfois
+ * impossible de retourner dans la salle précédente. Chaque déplacement
+ * vers une salle consomme de l'énergie. Le but est de consommer le
+ * moins d'énergie possible pour passer d'une salle à une autre.
  */
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <string.h>
 #include "fstack.h"
 #include "list.h"
+#include "parser.h"
+
 
 fstack_t ** dijkstra(vec_t v, int dep);
 fstack_t ** find_paths(vec_t v, int dep, int * dist, int * pred);
 void        print_paths(fstack_t ** paths, int nbpaths, int dep);
+void        print_pcc(fstack_t ** paths, vec_t v, int dep);
+void        rewind_paths(fstack_t ** paths, int n);
 
 int main(void) {
-  vec_t v = create_list(6);
-
-  add_succ(&v.n[0].l, &v.n[2], 3);
-  add_succ(&v.n[0].l, &v.n[1], 1);
-
-  add_succ(&v.n[1].l, &v.n[2], 1);
-  add_succ(&v.n[1].l, &v.n[3], 8);
-
-  add_succ(&v.n[2].l, &v.n[4], 2);
-  add_succ(&v.n[2].l, &v.n[3], 3);
-  add_succ(&v.n[2].l, &v.n[5], 2);
-
-  add_succ(&v.n[4].l, &v.n[3], 2);
-  add_succ(&v.n[4].l, &v.n[4], 2);
-
-  add_succ(&v.n[5].l, &v.n[4], 1);
-
-  // printf("dij: %d\n", dijkstra(v, 0, 3));
-  fstack_t ** paths = dijkstra(v, 0);
-  print_paths(paths, v.nbn, 0);
-
-  // print_list(v);
-  free_list(v);
+  int n;
+  char * file = read_file("maze.txt");
+  normalize(file);
+  data_t * data = tokenize(file, &n);
+  vec_t v = generate_list(data, n);
+  print_name_list(v);
+  fstack_t ** paths = dijkstra(v, 6);
+  print_pcc(paths, v, 6);
   return 0;
 }
+
+void rewind_paths(fstack_t ** paths, int n) {
+  int i;
+  for(i = 0; i < n; i++) {
+    rewind_stack(paths[i]);
+  }
+}
+
 
 fstack_t ** dijkstra(vec_t v, int dep) {
   int ** cost = (int **)malloc(v.nbn * sizeof(*cost));
@@ -111,6 +119,20 @@ void print_paths(fstack_t ** paths, int nbpaths, int dep) {
     if(i != dep) {
       while(!empty_stack(paths[i])) {
         printf("%d -> ", pop_stack(paths[i]));
+      }
+    }
+    printf("FIN \n\n\n");
+  }
+}
+
+void print_pcc(fstack_t ** paths, vec_t v, int dep) {
+  int i;
+  for(i = 0; i < v.nbn; i++) {
+    printf("start:   %s to %s\n", v.n[dep].name, v.n[paths[i]->index].name);
+    printf("cost:  %d\n", paths[i]->dist);
+    if(i != dep) {
+      while(!empty_stack(paths[i])) {
+        printf("%s -> ", v.n[pop_stack(paths[i])].name);
       }
     }
     printf("FIN \n\n\n");

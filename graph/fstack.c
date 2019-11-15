@@ -16,6 +16,7 @@ extern fstack_t * init_stack(int index, int dist) {
   q->size = SIZE_F;
   q->index = index;
   q->dist = dist;
+  q->nel = 0;
   q->paths = (int *)malloc(q->size * sizeof(*q->paths));
   assert(q->paths);
   q->top = -1;
@@ -28,6 +29,7 @@ extern void push_stack(fstack_t * q, int p) {
     assert(q->paths);
   }
   q->paths[++q->top] = p;
+  if(q->top >= q->nel) q->nel++;
 }
 
 extern int pop_stack(fstack_t * q) {
@@ -38,6 +40,9 @@ extern int empty_stack(fstack_t * q) {
   return q->top < 0;
 }
 
+extern void rewind_stack(fstack_t * q) {
+  q->top = q->nel;
+}
 /*! \brief clean the stack. */
 extern void free_stack(fstack_t * q) {
   if(q)

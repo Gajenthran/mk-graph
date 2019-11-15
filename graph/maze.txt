@@ -1,0 +1,7 @@
+Entrée,Bibliothèque__1
+Bibliothèque,Salle 01__2, Amphithéatre__3, Gymnase__1
+Amphithéatre,Gymnase__4
+Salle 01,Gymnase__2
+Gymnase,Café__3
+Café,
+Cour, Salle 01__1
