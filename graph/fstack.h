@@ -3,18 +3,19 @@
 
 #define SIZE_F 1024
 
+/** \brief Structure représentant une pile de données */
 typedef struct stack fstack_t;
 struct stack {
-  int * paths;
-  int size, top;
-  int index, dist, nel;
+  int * paths; // vecteur de chemins
+  int size, top; // taille et indice actuel du vecteur
+  int index, dist, nel; // indice, distance du vertex
 };
 
-extern fstack_t * init_stack(int index, int dist);
-extern void      push_stack(fstack_t * q, int p);
-extern int       pop_stack(fstack_t * q);
-extern int       empty_stack(fstack_t * q);
-extern void      rewind_stack(fstack_t * q);
-extern void      free_stack(fstack_t * q);
+fstack_t * init_stack(int index, int dist);
+void       push_stack(fstack_t * q, int p);
+int        pop_stack(fstack_t * q);
+int        empty_stack(fstack_t * q);
+void       rewind_stack(fstack_t * q);
+void       free_stack(fstack_t * q);
 
 #endif

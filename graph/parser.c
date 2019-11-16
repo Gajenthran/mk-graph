@@ -4,7 +4,13 @@
 #include <string.h>
 #include "parser.h"
 
-
+/** \brief Lire le fichiers de données et retourner 
+ * son contenu sous forme de chaîne de caractère.
+ *
+ * \param filename nom du fichier
+ * 
+ * \return le contenu des données sous forme de chaîne
+ */
 char * read_file(char * filename) {
   char * d = NULL;
   size_t size = 0;
@@ -27,6 +33,12 @@ char * read_file(char * filename) {
   return d;
 }
 
+/** \brief Normalise la chaîne en retirant
+ * les majuscules et les espaces.
+ *
+ * \param s chaîne de caractères
+ * 
+ */
 void normalize(char * s) {
   int c = 0;
   while(s[c] != '\0') {
@@ -43,6 +55,16 @@ void normalize(char * s) {
   }
 }
 
+/** \brief Tokenize le contenu du fichiers en le coupant
+ * en lignes et en virgule pour récupérer les données 
+ * utiles (vertex + successeurs)
+ *
+ * \param t fichier de données sous forme de chaîne de caractère
+ * \param size taille du fichier de données
+ * 
+ * \return la structure de forme data_t qui représente les données 
+ * formalisées
+ */
 data_t * tokenize(char * t, int * size) {
   int i = 0, j = 0, c = 1;
   while(t[i]) {

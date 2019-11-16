@@ -4,13 +4,19 @@
 #include <string.h>
 #include "dijkstra.h"
 
-void rewind_paths(fstack_t ** paths, int n) {
-  int i;
-  for(i = 0; i < n; i++) {
-    rewind_stack(paths[i]);
-  }
-}
+static fstack_t ** find_paths(vec_t v, int dep, int * dist, int * pred);
 
+/**
+ * \brief L'algorithme de Dijkstra permettant de calculer
+ * le plus court chemin d'un point à un autre, en stockant
+ * les différents chemins et leurs coût dans une pile de
+ * données.
+ *
+ * \param v vecteur de liste de successeurs (graphe)
+ * \param dep vertex de départ
+ * \return pile des plus courts chemins selon un vertex
+ * de départ
+ */
 fstack_t ** dijkstra(vec_t v, int dep) {
   int ** cost = (int **)malloc(v.nbn * sizeof(*cost));
   assert(cost);
@@ -72,36 +78,34 @@ fstack_t ** dijkstra(vec_t v, int dep) {
   return find_paths(v, dep, dist, pred);
 }
 
-void print_paths(fstack_t ** paths, int nbpaths, int dep) {
+/**
+ * \brief Rempiler les différents chemins 
+ * des vertex qui ont été dépilés.
+ *
+ * \param paths liste des chemins pour un vertex donné
+ * \param n     nombre de chemins
+ */
+void rewind_paths(fstack_t ** paths, int n) {
   int i;
-  for(i = 0; i < nbpaths; i++) {
-    printf("dir:   %d to %d\n", dep, paths[i]->index);
-    printf("cost:  %d\n", paths[i]->dist);
-    printf("paths: ");
-    if(i != dep) {
-      while(!empty_stack(paths[i])) {
-        printf("%d -> ", pop_stack(paths[i]));
-      }
-    }
-    printf("FIN \n\n\n");
+  for(i = 0; i < n; i++) {
+    rewind_stack(paths[i]);
   }
 }
 
-void print_pcc(fstack_t ** paths, vec_t v, int dep) {
-  int i;
-  for(i = 0; i < v.nbn; i++) {
-    printf("start: %s to %s\n", v.n[dep].name, v.n[paths[i]->index].name);
-    printf("cost:  %d\n", paths[i]->dist);
-    if(i != dep) {
-      while(!empty_stack(paths[i])) {
-        printf("%s -> ", v.n[pop_stack(paths[i])].name);
-      }
-    }
-    printf("FIN \n\n\n");
-  }
-}
-
-fstack_t ** find_paths(vec_t v, int dep, int * dist, int * pred) {
+/**
+ * \brief Place les différents plus cours chemin
+ * d'un vertex par rapport aux autres vertices
+ * en stockant le chemin et le coût de chaque
+ * chemin.
+ *
+ * \param v vecteur de liste de successeurs (graphe)
+ * \param dep vertex de départ
+ * \param dist distance entre un vertex et les autres
+ * \param pred vertex prédit pour arriver au vertex final
+ * \return pile des plus courts chemins selon un vertex
+ * de départ
+ */
+static fstack_t ** find_paths(vec_t v, int dep, int * dist, int * pred) {
   fstack_t ** paths;
   paths = (fstack_t **)malloc(v.nbn * sizeof(*paths));
   assert(paths);
@@ -118,4 +122,16 @@ fstack_t ** find_paths(vec_t v, int dep, int * dist, int * pred) {
     }
   }
   return paths; 
+}
+
+/** \brief Fonction retournant un nombre aléatoire entre deux
+ * intervalles.
+ *
+ * \param min intervalle minimal
+ * \param max intervalle maximal
+ * 
+ * \return Nombre aléatoire entre les intervalles min-max.
+ */
+int my_rand(int min, int max) {
+  return (rand()/(double)RAND_MAX) * (max - min) + min;
 }

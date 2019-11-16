@@ -2,38 +2,35 @@
 #define LIST_H_
 
 #include "parser.h"
-#define VAL 5
 
 /** \brief Structure représentant la liste de successeurs */
 typedef struct list list_t;
 struct list {
   unsigned int v;
-  struct node * an;   /*!< Adresse du noeud */
-  struct list * succ;   /*!< Pointeur vers le successeur suivant */
+  struct node * an;   // adresse du noeud 
+  struct list * succ; // Pointeur vers le successeur suivant
 };
 
 /** \brief Structure représentant un noeud */
 typedef struct node node_t;
 struct node {
-  char * name;
-  int in;              /*!< Indice du noeud */
-  struct list * l;      /*!< Liste des successeurs */
+  char * name;     // nom du noeud 
+  int in;          // indice du noeud
+  struct list * l; // liste des successeurs
 };
 
 /** \brief Structure représentant un vecteur de tous les noeuds */
 typedef struct vec vec_t;
 struct vec {
-  struct node * n;    /*!< Ensemble des noeuds */
-  int nbn;             /*!< Nombre de noeuds */
+  struct node * n; // ensemble des noeuds
+  int nbn;         // nombre de noeuds
 };
 
-vec_t       create_list(int nbn);
-vec_t       generate_list(data_t * data, int n);
-void        add_succ(list_t ** l, node_t * adrn, int v);
-void        print_list(vec_t v);
-void        print_name_list(vec_t v);
-void        free_list(vec_t v);
-// int         my_rand(int min, int max);
+vec_t generate_list(data_t * data, int n);
+void  add_succ(list_t ** l, node_t * adrn, int v);
+void  print_list(vec_t v);
+void  print_name_list(vec_t v);
+void  free_list(vec_t v);
 
 
 #endif

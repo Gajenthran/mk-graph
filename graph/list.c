@@ -5,40 +5,41 @@
 #include <time.h>
 #include "list.h"
 
-/** \brief Fonction retournant un nombre aléatoire entre deux
- * intervalles.
- *
- * \param min intervalle minimal
- * \param max intervalle maximal
- * 
- * \return Nombre aléatoire entre les intervalles min-max.
- */
-/*int my_rand(int min, int max) {
-  return (rand()/(double)RAND_MAX) * (max - min) + min;
-} */
-
 /**
- * \brief Creer le graphe : liste des successeurs en indiquant 
- * le nombre de noeuds.
+ * \brief Crée le graphe : liste des successeurs en indiquant 
+ * le nombre de noeuds et les informations concernant le labyrinthe
+ * pour pouvoir stocker l'indice et le nom des salles et des voisins.
  *
- * \param nbn nombre de noeuds
+ * \param datat ensemble de données du labyrinthe
+ * \param nbn   nombre de noeuds
  * 
  * \return structure vec_t qui correspond à l'ensemble des vecteurs 
  * contenant les noeuds du graphe
  */
-vec_t create_list(int nbn) {
+vec_t generate_list(data_t * data, int n) {
   vec_t vec;
-  vec.n = (node_t *)malloc(nbn * sizeof(*vec.n));
+  vec.n = (node_t *)malloc(n * sizeof(*vec.n));
   assert(vec.n);
-  vec.nbn = nbn;
+  vec.nbn = n;
 
-  int i;
-  for(i = 0; i < vec.nbn; i++) {
+  int i, j, k;
+  for(i = 0; i < n; i++) {
+    vec.n[i].name = strdup(data[i].room);
     vec.n[i].in = i;
     vec.n[i].l = (list_t *)malloc(sizeof(*vec.n[i].l));
-    vec.n[i].l = NULL;
+    vec.n[i].l = NULL; 
   }
-  return vec; 
+
+  for(i = 0; i < n; i++) {
+    for(j = 0; j < data[i].nbn; j++) {
+      for(k = 0; k < n; k++) {
+        if(!strcmp(data[k].room, data[i].neigh[j])) {
+          add_succ(&vec.n[i].l, &vec.n[k], data[i].v[j]);
+        }
+      }
+    }
+  }
+  return vec;
 }
 
 /**
@@ -67,10 +68,11 @@ void add_succ(list_t ** l, node_t * adrn, int v) {
 }
 
 /**
- * \brief Afficher les noeuds du graphe (Lis) où chaque valeur
- * d'un noeud correspond à l'indice des fonctions de fpr.
+ * \brief Affiche les noeuds du graphe où chaque valeur
+ * d'un noeud correspond à l'indice de la salle présent
+ * dans le labyrinthe
  *
- * \param v   vecteur de noeuds (le graphe)
+ * \param v vecteur de noeuds (le graphe)
  */
 void print_list(vec_t v) {
   int i;
@@ -85,11 +87,17 @@ void print_list(vec_t v) {
   }
 }
 
+/**
+ * \brief Affiche les noeuds du graphe où chaque chaîne
+ * représente le nom de chaque salle.
+ *
+ * \param v vecteur de noeuds (le graphe)
+ */
 void print_name_list(vec_t v) {
   int i;
   list_t * l;
   for(i = 0; i < v.nbn; i++) {
-    printf("%s: ",v.n[i].name);
+    printf("%d) %s: ", i, v.n[i].name);
     l = v.n[i].l;
     while(l) {
       printf("%s(%d), ", v.n[l->an->in].name, l->v);
@@ -114,30 +122,4 @@ void free_list(vec_t v) {
       free(tmp);
     }
   }
-}
-
-vec_t generate_list(data_t * data, int n) {
-  vec_t vec;
-  vec.n = (node_t *)malloc(n * sizeof(*vec.n));
-  assert(vec.n);
-  vec.nbn = n;
-
-  int i, j, k;
-  for(i = 0; i < n; i++) {
-    vec.n[i].name = strdup(data[i].room);
-    vec.n[i].in = i;
-    vec.n[i].l = (list_t *)malloc(sizeof(*vec.n[i].l));
-    vec.n[i].l = NULL; 
-  }
-
-  for(i = 0; i < n; i++) {
-    for(j = 0; j < data[i].nbn; j++) {
-      for(k = 0; k < n; k++) {
-        if(!strcmp(data[k].room, data[i].neigh[j])) {
-          add_succ(&vec.n[i].l, &vec.n[k], data[i].v[j]);
-        }
-      }
-    }
-  }
-  return vec;
 }

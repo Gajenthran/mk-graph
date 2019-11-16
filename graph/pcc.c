@@ -1,12 +1,6 @@
 /**
- * Pointeur de fonctions pour SDL
- * français/anglais ?
- * static/extern ?
- * pcc
- * pointeur de fonction
  * remove the infinity
- * remove ll
- * argv
+ * début des fichiers (auteur)
  */
 
 /*
@@ -25,23 +19,46 @@
 #include "list.h"
 #include "parser.h"
 #include "sdl_driver.h"
+#include "cl_driver.h"
 
-int main(void) {
+/**
+ * \brief Usage que doit adopter l'utilisateur pour
+ * lancer le programme.
+ */
+void usage(char * prog) {
+  fprintf(stderr, "Usage: %s <file> [-sdl]", prog);
+  exit(0);
+}
+
+int main(int argc, char *argv[]) {
   int n;
-  char * file = read_file("maze.txt");
-  normalize(file);
-  data_t * data = tokenize(file, &n);
+  char * filename = NULL;
+  // vérifie le nom du fichier
+  if(argc >= 2) {
+    filename = read_file(argv[1]);
+  } else {
+    filename = read_file("files/maze.txt");
+  }
+
+  // normalise le texte pour l'exploiter
+  normalize(filename);
+  data_t * data = tokenize(filename, &n);
+
+  // transforme en liste de successeurs 
   vec_t v = generate_list(data, n);
-  print_name_list(v);
-  fstack_t ** paths = NULL;  
-  /* int i, j;
-  for(i = 0; i < v.nbn; i++) {
-    fstack_t ** paths = dijkstra(v, i);
-    print_pcc(paths, v, i);
-    for(j = 0; j < v.nbn; j++)
-      free_stack(paths[j]);
-  } */
-  init_SDL(v);
-  callback(v);
+
+  // évènement + affichage en CLI et GUI
+  if(argc >= 3) {
+    if(!strcmp("-sdl", argv[2])) {
+      init_SDL(v);
+      callback(v);
+    } else {
+      usage(argv[0]);
+    }
+  } else {
+    init_cl(v);
+    callback_cl(v);
+  }
+
   return 0;
 }

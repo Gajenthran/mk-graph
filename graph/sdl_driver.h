@@ -8,43 +8,30 @@
 #include "fstack.h"
 #include "dijkstra.h"
 
+/** \brief Structure représentant les entrées utilisateurs */
 typedef struct input input_t;
 struct input {
-    int key;
-    int mbx, mby;
-    int mmx, mmy;
-    char quit;
+    int mbx, mby; // coordonnées du curseur
+    char quit;    // booléan pour vérifier les sorties du prog
 };
 
-
+/** Enumération des différents layouts */
 enum layout_e {
-    VERT_E,
-    GRAPH_E,
-    PATHS_E,
-    LAYOUTS_E
+    VERT_E,    // layout pour les vertices
+    GRAPH_E,   // layout pour le graphe
+    PATHS_E,   // layout pour les chemins
+    LAYOUTS_E 
 };
 
+/** Enumération des différents textes */
 enum text_e {
-    TVER_E,
-    TGRAPH_E,
-    TPATHS_E,
+    TVER_E,   // texte pour les vertices
+    TGRAPH_E, // texte pour le graphe
+    TPATHS_E, // texte pour les chemins
     TEXTS_E
 };
 
-static int load_texts(vec_t v);
 int init_SDL(vec_t v);
-void draw_circle(SDL_Point center, int radius, SDL_Color color);
-void quit(void);
-int element_clicked(int x0, int y0, int x1, int y1);
-int element_targeted(int x0, int y0, int x1, int y1);
-void update_events(void);
 void callback(vec_t v);
-static void update(void);
-void draw(vec_t v, fstack_t ** paths);
-void clear(void);
-static void select_vertices(void);
-void init_graph_coord(vec_t v);
-void draw_edge(vec_t v, fstack_t ** paths);
-static void select_paths();
 
 #endif

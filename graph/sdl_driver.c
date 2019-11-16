@@ -3,84 +3,100 @@
 #include <assert.h>
 #include "sdl_driver.h"
 
+static int load_texts(vec_t v);
+static void init_graph_coord(vec_t v);
+static void draw(vec_t v, fstack_t ** paths);
+static void draw_circle(SDL_Point center, int radius, SDL_Color color);
+static void draw_title(void);
+static void draw_vertices(void);
+static void draw_paths(vec_t v, fstack_t ** paths);
+static void draw_edge(vec_t v, fstack_t ** paths);
+static void clean_tab(int *t, int n);
+static void update_events(void);
+static int element_clicked(int x0, int y0, int x1, int y1);
+static void select_vertices(void);
+static void select_paths(void);
+static void quit(void);
+static void update(void);
+static void clear(void);
+
+/**
+ * \brief Textes représentant les titres présent
+ * dans la fenêtre SDL.
+ */
 static const char * texts[] = {
   "Vertices:",
   "Graph:",
   "Paths:"
 };
 
+/**
+ * \brief Position des textes représentant les titres 
+ * présent dans la fenêtre SDL.
+ */
 static const SDL_Rect texts_rect[TEXTS_E] = {
   {15, 10, 90, 90},
   {15, 300, 70, 70},
   {930, 300, 70, 70}
 };
 
+/**
+ * \brief Layouts représentant les différentes parties
+ * du programme dans la fenêtre SDL.
+ */
 static const SDL_Rect layouts_rect[LAYOUTS_E] = {
   {0, 0, 1280, 280},
   {0, 280, 890, 680},
   {890, 280, 390, 680},
 };
 
+/**
+ * \brief Position de l'affichage du chemin d'un vertex
+ * vers un autre.
+ */
 static SDL_Rect tpaths_rect = {
-  890 + 50,
+  830 + 50,
   280,
   120,
   50
 };
 
+/** \brief Position de l'affichage des nom de vertices */
 static SDL_Rect vert_rect = {30, 90, 70, 70};
+/** \brief Les vertices visités */
 static int * visited_cir = NULL;
+/** \brief Position de l'affichage des vertices */
 static SDL_Rect * graph_rect = NULL; 
-/*! \brief window of the game. */
+/** \brief Fenêtre du programme SDL */
 static SDL_Window *win;
-/*! \brief renderer of the game. */
+/** \brief Rendu du programme SDL */
 static SDL_Renderer *ren;
-/*! \brief all the textures of texts. */
+/** \brief Liste des textures de texte du programme SDL */
 static SDL_Texture ** textTex;
-/*! \brief white color. */
-static SDL_Color white = { 255, 255, 255, 200 },
-                 black = { 0, 0, 0, 200 },
+/** \brief Liste des SDL couleurs sous la forme RGB */
+static SDL_Color black = { 0, 0, 0, 200 },
                  red   = { 200, 22, 9, 255},
                  blue  = { 18, 184, 234, 140};
-/*! \brief font used for the texts. */
+/** \brief Police utilisée pour les textes */
 static TTF_Font * font = NULL;
+/** \brief Représentation des entrées utilisateur */
 static input_t in;
+/** \brief Nombre de textes présenté dans le programme */
 static int ntexts = 0;
+/** \brief L'indice du vertex de départ */
 static int state = 0, old_state = -1;
-static unsigned int pstate = -1, old_pstate = -1, ndist = 0;
+/** \brief L'indice du vertex final */
+static int pstate = -1, old_pstate = -1;
 
-/*! \brief load all the texts, i.e. transform all the texts into textures. */
-static int load_texts(vec_t v) {
-  textTex = (SDL_Texture **)malloc((v.nbn + TEXTS_E) * sizeof(*textTex));
-  assert(textTex);
 
-  ntexts = v.nbn + TEXTS_E;
-  int i;
-  font = TTF_OpenFont("files/Arial.ttf", 30);
-  SDL_Surface *t;
-  for(i = 0; i < TEXTS_E + v.nbn; ++i) {
-    if(i < TEXTS_E) {
-      t = TTF_RenderText_Solid(font, texts[i], black);
-    } else {
-      t = TTF_RenderText_Solid(font, strndup(v.n[i - TEXTS_E].name, 5), black);
-    }
-    if(t == NULL) {
-      SDL_DestroyRenderer(ren);
-      SDL_DestroyWindow(win);
-      printf("Error: %s\n", SDL_GetError());
-      SDL_Quit();
-      return 1;
-    }
-
-    textTex[i] = SDL_CreateTextureFromSurface(ren, t);
-    SDL_FreeSurface(t);
-  }
-  return 0;
-}
-
-/*! \brief initialize all the SDL settings. */
+/** 
+ * \brief Initialise tous les paramètres concernant
+ * le contexte SDL.
+ *
+ * \param v vecteur de liste de successeurs (graphe)
+ * \return 0 si tout s'est déroulé correctement, 1 sinon.
+ */
 int init_SDL(vec_t v) {
-  int i;
   if(SDL_Init(SDL_INIT_VIDEO) != 0){
     printf("SDL_Init Error: %s\n",  SDL_GetError());
     return 1;
@@ -111,30 +127,19 @@ int init_SDL(vec_t v) {
   return 0;
 }
 
-void draw_circle(SDL_Point center, int radius, SDL_Color color) {
-  SDL_SetRenderDrawColor(ren, color.r, color.g, color.b, color.a);
-  for (int w = 0; w < radius * 2; w++) {
-    for (int h = 0; h < radius * 2; h++) {
-      int dx = radius - w;
-      int dy = radius - h;
-      if ((dx*dx + dy*dy) <= (radius * radius)) {
-        SDL_RenderDrawPoint(ren, center.x + dx, center.y + dy);
-      }
-    }
-  }
-}
-
-static clean_tab(int *t, int n) {
-  int i;
-  for(i = 0; i < n; i++)
-    t[i] = 0;
-}
+/**
+ * \brief Fonction de callback qui permet d'utiliser
+ * l'algorithme de Dijkstra pour chercher le plus
+ * court chemin.
+ *
+ * \param v vecteur de liste de successeurs (graphe)
+ */
 void callback(vec_t v) {
-  int i, j = -1, k = 0;
+  int i;
   fstack_t ** paths = NULL;
   visited_cir = (int *)calloc(0, v.nbn * sizeof(*visited_cir));
   assert(visited_cir);
-  for(;;) {
+  while(!in.quit) {
     clear();
     if(state != old_state) {
       if(paths) {
@@ -142,56 +147,66 @@ void callback(vec_t v) {
           free_stack(paths[i]);
       }
       paths = dijkstra(v, state);
-      // print_pcc(paths, v, state);
       old_state = state;
     }
     if(pstate >= 0 && pstate != old_pstate) {
-        if(state != pstate) {
-          clean_tab(visited_cir, v.nbn);
-          // printf("%d\n", pstate);
-          while(!empty_stack(paths[pstate])) {
-            visited_cir[pop_stack(paths[pstate])] = 1;
-            /* if(i == -1) {
-              i = pop_stack(paths[pstate]);
-            } else if(j == -1) {
-              j = pop_stack(paths[pstate]);
-              dist_line[k].x = graph_rect[i].x;
-              dist_line[k].y = graph_rect[i].y;
-              dist_line[k].w = graph_rect[j].x;
-              dist_line[k++].h = graph_rect[j].y;
-            } else {
-              i = j;
-              if(!empty_stack(paths[pstate])) {
-                j = pop_stack(paths[pstate]);
-                dist_line[k].x = graph_rect[i].x;
-                dist_line[k].y = graph_rect[i].y;
-                dist_line[k].w = graph_rect[j].x;
-                dist_line[k++].h = graph_rect[j].y;
-              }
-            } */
-          }
-          rewind_stack(paths[pstate]);
-        }
-          // r.x = graph_rect[i].x + graph_rect[i].w / 2;
-          // r.y = graph_rect[i].y + graph_rect[i].h / 2;
-          // r.w = graph_rect[l->an->in].x + graph_rect[l->an->in].w / 2;
-          // r.h = graph_rect[l->an->in].y + graph_rect[l->an->in].h / 2;
-          // while(!empty_stack(paths[pstate])) {
-          //   printf("%d\n", pop_stack(paths[pstate]));
-          // }
+      if(state != pstate) {
+        clean_tab(visited_cir, v.nbn);
+        while(!empty_stack(paths[pstate]))
+          visited_cir[pop_stack(paths[pstate])] = 1;
+        rewind_stack(paths[pstate]);
+      }
       old_pstate = pstate;
     }
     update_events();
     draw(v, paths);
     update();
   }
+  quit();
 }
 
-int my_rand(int min, int max) {
-  return (rand()/(double)RAND_MAX) * (max - min) + min;
+/** 
+ * \brief Charger tous les textes, càd transformer tous 
+ * les textes en textures. 
+ *
+ * \param v vecteur de liste de successeurs (graphe)
+ * \return 0 si tout s'est déroulé correctement, 1 sinon.
+ */
+static int load_texts(vec_t v) {
+  textTex = (SDL_Texture **)malloc((v.nbn + TEXTS_E) * sizeof(*textTex));
+  assert(textTex);
+
+  ntexts = v.nbn + TEXTS_E;
+  int i;
+  font = TTF_OpenFont("files/Roboto-Condensed.ttf", 30);
+  SDL_Surface *t;
+  for(i = 0; i < TEXTS_E + v.nbn; ++i) {
+    if(i < TEXTS_E) {
+      t = TTF_RenderText_Solid(font, texts[i], black);
+    } else {
+      t = TTF_RenderText_Solid(font, strndup(v.n[i - TEXTS_E].name, 5), black);
+    }
+    if(t == NULL) {
+      SDL_DestroyRenderer(ren);
+      SDL_DestroyWindow(win);
+      printf("Error: %s\n", SDL_GetError());
+      SDL_Quit();
+      return 1;
+    }
+
+    textTex[i] = SDL_CreateTextureFromSurface(ren, t);
+    SDL_FreeSurface(t);
+  }
+  return 0;
 }
 
-void init_graph_coord(vec_t v) {
+/** 
+ * \brief Initialise les coordonnées pour
+ * l'affichage du graphe.
+ *
+ * \param v vecteur de liste de successeurs (graphe)
+ */
+static void init_graph_coord(vec_t v) {
   srand(time(NULL));
   int xr, yr, i;
   graph_rect = (SDL_Rect *)malloc(v.nbn * sizeof(*graph_rect));
@@ -210,7 +225,55 @@ void init_graph_coord(vec_t v) {
   }
 }
 
-void draw_title() {
+/** 
+ * \brief Dessine les différentes parties du programmes à
+ * savoir les différentes vertices présents dans le graphe,
+ * le graphe et les chemins.
+ *
+ * \param v vecteur de liste de successeurs (graphe)
+ * \param paths liste des chemins pour un vertex donné
+ */
+static void draw(vec_t v, fstack_t ** paths) {
+  int i;
+  SDL_SetRenderDrawColor(ren, 0, 0, 0, 255);
+  draw_title();
+  draw_vertices();
+  for(i = 0; i < ntexts - TEXTS_E; i++) {
+    SDL_Point p = {graph_rect[i].x + graph_rect[i].w/2, graph_rect[i].y + + graph_rect[i].h/2};
+    if(visited_cir[i])
+    draw_circle(p, 20, blue);
+    else
+    draw_circle(p, 20, red);
+    SDL_RenderCopy(ren, textTex[i + TEXTS_E], NULL, &graph_rect[i]);
+  }
+  SDL_SetRenderDrawColor(ren, 0, 0, 0, 255);
+  draw_edge(v, paths);
+  draw_paths(v, paths);
+}
+
+/** 
+ * \brief Dessine un cercle sous SDL.
+ *
+ * \param p      point sous SDL (centre du cercle)
+ * \param radius rayon du cercle
+ * \return color couleur du cercle
+ */
+static void draw_circle(SDL_Point center, int radius, SDL_Color color) {
+  SDL_SetRenderDrawColor(ren, color.r, color.g, color.b, color.a);
+  for (int w = 0; w < radius * 2; w++) {
+    for (int h = 0; h < radius * 2; h++) {
+      int dx = radius - w;
+      int dy = radius - h;
+      if ((dx*dx + dy*dy) <= (radius * radius)) {
+        SDL_RenderDrawPoint(ren, center.x + dx, center.y + dy);
+      }
+    }
+  }
+}
+
+/** 
+ * \brief Dessine les titres de chaque layout. */
+static void draw_title(void) {
   int i;
   for(i = 0; i < LAYOUTS_E; i++) {
     SDL_RenderDrawRect(ren, &layouts_rect[i]);
@@ -218,7 +281,9 @@ void draw_title() {
   }
 }
 
-void draw_vertices() {
+/** 
+ * \brief Dessine le nom de chaque vertices. */
+static void draw_vertices(void) {
   int i, off = vert_rect.x;
   SDL_Rect v_rect = vert_rect;
   for(i = 0; i < ntexts - TEXTS_E; i++) {
@@ -234,7 +299,13 @@ void draw_vertices() {
   }
 }
 
-void draw_paths(vec_t v, fstack_t ** paths) {
+/** 
+ * \brief Dessine le chemin pour chaque vertex. 
+ *
+ * \param v vecteur de liste de successeurs (graphe)
+ * \param paths liste des chemins pour un vertex donné
+ */
+static void draw_paths(vec_t v, fstack_t ** paths) {
   if(!paths)
     return;
   int i;
@@ -253,32 +324,25 @@ void draw_paths(vec_t v, fstack_t ** paths) {
     }
     SDL_Rect r = tpaths_rect;
     r.y = (r.y + 50 * i) + 100;
+    SDL_Point p = {r.x + r.w/2, r.y + + r.h/2};
+    if(i == pstate) draw_circle(p, 5, red);
+    else draw_circle(p, 5, black);
+    r.x += 100;
     tex = SDL_CreateTextureFromSurface(ren, s);
     SDL_RenderCopy(ren, tex, NULL, &r);
     SDL_FreeSurface(s);
   }
 }
 
-void draw(vec_t v, fstack_t ** paths) {
-  int i, off = vert_rect.x;
-  SDL_SetRenderDrawColor(ren, 0, 0, 0, 255);
-  draw_title();
-  draw_vertices();
-  for(i = 0; i < ntexts - TEXTS_E; i++) {
-    SDL_Point p = {graph_rect[i].x + graph_rect[i].w/2, graph_rect[i].y + + graph_rect[i].h/2};
-    if(visited_cir[i])
-    draw_circle(p, 20, blue);
-    else
-    draw_circle(p, 20, red);
-    SDL_RenderCopy(ren, textTex[i + TEXTS_E], NULL, &graph_rect[i]);
-  }
-  SDL_SetRenderDrawColor(ren, 0, 0, 0, 255);
-  draw_edge(v, paths);
-  draw_paths(v, paths);
-}
-
-void draw_edge(vec_t v, fstack_t ** paths) {
-  int i, dist[2];
+/** 
+ * \brief Dessine les edges (arcs) présents entre chaque
+ * vertex (arc).
+ *
+ * \param v vecteur de liste de successeurs (graphe)
+ * \param paths liste des chemins pour un vertex donné
+ */
+static void draw_edge(vec_t v, fstack_t ** paths) {
+  int i;
   list_t * l;
 
   char str[20];
@@ -301,15 +365,7 @@ void draw_edge(vec_t v, fstack_t ** paths) {
       r0.h = r.h;
       SDL_SetRenderDrawColor(ren, red.r, red.g, red.b, 150);
       SDL_RenderDrawLine(ren, r0.x, r0.y, r0.w, r0.h);
-      /* printf("pstate: %d\n", pstate);
-//      printf("%d\n", pop_stack(paths[2]));
-      if(state >= 0 && pstate >= 0) {
-        while(!empty_stack(paths[1])) {
-          printf("popo\n");
-          printf("%s -> ", v.n[pop_stack(paths[1])].name);
-        }
-        rewind_stack(paths[state]);
-      } */
+
       // Value
       sprintf(str, "%d", l->v);
       s = TTF_RenderText_Solid(font, str, red);
@@ -329,29 +385,36 @@ void draw_edge(vec_t v, fstack_t ** paths) {
   }
 }
 
-void update_events(void) {
+/** 
+ * \brief (Re)Initialise le tableau en mettant les 
+ * valeurs à 0.
+ *
+ * \param t tableau
+ * \param n taille du tableau
+ */
+static void clean_tab(int *t, int n) {
+  int i;
+  for(i = 0; i < n; i++)
+    t[i] = 0;
+}
+
+/** 
+ * \brief Met à jour les entrées utilisateurs.
+ */
+static void update_events(void) {
   SDL_Event ev;
   srand((unsigned int)time(NULL));
   int t0, t = SDL_GetTicks();
   while(SDL_PollEvent(&ev) != 0) {
     switch(ev.type) {
       case SDL_QUIT:
-        quit();
-        break;
-      case SDL_KEYDOWN:
-        if(ev.key.keysym.sym == SDLK_LEFT)
-          in.key = -1;
-        else if(ev.key.keysym.sym == SDLK_RIGHT)
-          in.key = 1;
+        in.quit = 1;
         break;
       case SDL_MOUSEBUTTONDOWN:
         if(ev.button.button == SDL_BUTTON_LEFT) {
           in.mbx = ev.button.x;
           in.mby = ev.button.y;
         }
-      case SDL_MOUSEMOTION:
-        in.mmx = ev.button.x;
-        in.mmy = ev.button.y;
         break;
       default:
         break;
@@ -366,6 +429,28 @@ void update_events(void) {
   }
 }
 
+/** 
+ * \brief Vérifie si le curseur de la souris clique dans le 
+ * rectangle donné en paramètre.
+ *
+ * \param x0 coordonnée x0 du rectangle
+ * \param y0 coordonnée y0 du rectangle
+ * \param y0 longueur x1 du rectangle
+ * \param y0 largeur y1 du rectangle
+ * \return 1 si le curseur est présent, 0 sinon
+ */
+static int element_clicked(int x0, int y0, int x1, int y1) {
+  if(in.mbx > x0 && in.mby > y0 && in.mbx < x1 && in.mby < y1) {
+    in.mbx = in.mby = 0;
+    return 1;
+  }
+  return 0;
+}
+
+/** 
+ * \brief Sélectionne un objet représentant un vertex avec
+ * la souris.
+ */
 static void select_vertices(void) {
   int i, off = vert_rect.x;
   SDL_Rect v_rect = vert_rect;
@@ -380,45 +465,34 @@ static void select_vertices(void) {
   }
 }
 
+/** 
+ * \brief Sélectionne un objet représentant un chemin avec
+ * la souris.
+ */
 static void select_paths() {
   int i;
-  // printf("nbn: %d\n", ntexts - TEXTS_E);
   for(i = 0; i < ntexts - TEXTS_E; i++) {
     SDL_Rect r = tpaths_rect;
+    r.x = 890;
+    r.w = 390;
     r.y = (r.y + 50 * i) + 100;
     if(element_clicked(r.x, r.y, r.x + r.w, r.y + r.h)) {
       pstate = i;
-      // printf("%d\n", i);
     }
   }
 }
 
-/*! \brief check if the mouse cursor is in the rectangle (coordinates are passed in 
- * parameter) */
-int element_targeted(int x0, int y0, int x1, int y1) {
-  return (in.mmx > x0 && in.mmy > y0 && in.mmx < x1 && in.mmy < y1);
-}
-
-/*! \brief check if the user clicks in the rectangle (coordinates are passed in 
- * parameter) */
-int element_clicked(int x0, int y0, int x1, int y1) {
-  if(in.mbx > x0 && in.mby > y0 && in.mbx < x1 && in.mby < y1) {
-    in.mbx = in.mby = 0;
-    return 1;
-  }
-  return 0;
-}
-
-void quit(void) {
+/** \brief Quitte le programme. */
+static void quit(void) {
   SDL_Quit();
   exit(0);
 }
-
+/** \brief Met à jour l'affichage du rendu. */
 static void update(void) {
   SDL_RenderPresent(ren);
 }
-
-void clear(void) {
+/** \brief Remet à zéro le rendu. */
+static void clear(void) {
   SDL_SetRenderDrawColor(ren, 255, 255, 255, SDL_ALPHA_OPAQUE);
   SDL_RenderClear(ren);
 }
