@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 #include <time.h>
 #include "list.h"
@@ -12,9 +13,9 @@
  * 
  * \return Nombre aléatoire entre les intervalles min-max.
  */
-int my_rand(int min, int max) {
+/*int my_rand(int min, int max) {
   return (rand()/(double)RAND_MAX) * (max - min) + min;
-}
+} */
 
 /**
  * \brief Creer le graphe : liste des successeurs en indiquant 

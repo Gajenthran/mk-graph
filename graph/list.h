@@ -33,7 +33,7 @@ void        add_succ(list_t ** l, node_t * adrn, int v);
 void        print_list(vec_t v);
 void        print_name_list(vec_t v);
 void        free_list(vec_t v);
-int         my_rand(int min, int max);
+// int         my_rand(int min, int max);
 
 
 #endif
