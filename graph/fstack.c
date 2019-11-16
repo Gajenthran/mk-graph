@@ -41,7 +41,7 @@ extern int empty_stack(fstack_t * q) {
 }
 
 extern void rewind_stack(fstack_t * q) {
-  q->top = q->nel;
+  q->top = q->nel-1;
 }
 /*! \brief clean the stack. */
 extern void free_stack(fstack_t * q) {

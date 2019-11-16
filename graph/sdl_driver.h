@@ -44,6 +44,7 @@ void draw(vec_t v, fstack_t ** paths);
 void clear(void);
 static void select_vertices(void);
 void init_graph_coord(vec_t v);
-void draw_edge(vec_t v);
+void draw_edge(vec_t v, fstack_t ** paths);
+static void select_paths();
 
 #endif

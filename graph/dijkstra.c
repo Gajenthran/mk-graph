@@ -90,7 +90,7 @@ void print_paths(fstack_t ** paths, int nbpaths, int dep) {
 void print_pcc(fstack_t ** paths, vec_t v, int dep) {
   int i;
   for(i = 0; i < v.nbn; i++) {
-    printf("start:   %s to %s\n", v.n[dep].name, v.n[paths[i]->index].name);
+    printf("start: %s to %s\n", v.n[dep].name, v.n[paths[i]->index].name);
     printf("cost:  %d\n", paths[i]->dist);
     if(i != dep) {
       while(!empty_stack(paths[i])) {
