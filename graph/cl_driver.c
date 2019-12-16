@@ -116,7 +116,7 @@ static void print_graph_cl(vec_t v) {
  * \param v     vecteur de liste de successeurs (graphe)
  * \param dep   vertex de départ
  */
-static void print_pcc_cl(fstack_t ** paths, vec_t v, int dep) {
+static void print_pcc_cl(fstack_t ** paths, vec_t v, data_t * data, int dep) {
   int i;
   for(i = 0; i < v.nbn; i++) {
     printf("start: %s to %s\n", v.n[dep].name, v.n[paths[i]->index].name);

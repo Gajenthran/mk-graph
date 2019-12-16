@@ -1,14 +1,14 @@
 CC=gcc
-CFLAGS=-Wall -O2 `sdl2-config --cflags`
+CFLAGS=-O2 `sdl2-config --cflags`
 LINK=-O2 `sdl2-config --libs` -lSDL2_image -lSDL2_ttf
-SRC=pcc.c fstack.c list.c parser.c sdl_driver.c dijkstra.c cl_driver.c mat.c
+SRC=graph.c sdl_driver.c main_sdl.c list.c parser.c
 OBJ=$(SRC:.c=.o)
 
 %.o:	%.c
 	$(CC) -c $(CFLAGS) $< 
 
-pcc: 	$(OBJ)
+graphsdl: 	$(OBJ)
 	$(CC) $(LINK) $(OBJ) -o $@
 
 clean:
-	rm *.o pcc
+	rm *.o graphsdl

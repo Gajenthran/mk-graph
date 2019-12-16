@@ -1,6 +1,7 @@
 /**
  * remove the infinity
  * début des fichiers (auteur)
+ * pointeur de fonction
  */
 
 /*
@@ -17,6 +18,7 @@
 #include <string.h>
 #include "fstack.h"
 #include "list.h"
+#include "mat.h"
 #include "parser.h"
 #include "sdl_driver.h"
 #include "cl_driver.h"

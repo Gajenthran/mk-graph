@@ -1,0 +1,7 @@
+Entree,Bibliotheque__1
+Bibliotheque,Cafe__3, Dortoir__2, Elevage__1
+Cafe,Elevage__4
+Dortoir,Elevage__2
+Elevage,Ferme__3
+Ferme
+Grange, Dortoir__1
