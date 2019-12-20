@@ -1,7 +1,7 @@
 CC=gcc
 CFLAGS=-O2 
 LINK=-O2
-SRC=graph.c cl_driver.c main_cl.c list.c parser.c
+SRC=graph.c cl_driver.c main_cl.c list.c parser.c dijkstra.c fstack.c
 OBJ=$(SRC:.c=.o)
 
 %.o:	%.c

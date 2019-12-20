@@ -10,7 +10,7 @@
  * le nombre de noeuds et les informations concernant le labyrinthe
  * pour pouvoir stocker l'indice et le nom des salles et des voisins.
  *
- * \param datat ensemble de données du labyrinthe
+ * \param data ensemble de données du labyrinthe
  * \param nbn   nombre de noeuds
  * 
  * \return structure vec_t qui correspond à l'ensemble des vecteurs 
@@ -18,6 +18,8 @@
  */
 vec_t generate_list(data_t * data, int n) {
   vec_t vec;
+
+  printf("n: %d\n", n);
   vec.n = (node_t *)malloc(n * sizeof(*vec.n));
   assert(vec.n);
   vec.nbn = n;

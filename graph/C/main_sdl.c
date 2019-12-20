@@ -6,7 +6,7 @@
  */
 #include "graph.h"
 
-extern Driver sdl_driver;
+extern driver_t sdl_driver;
 
 int main() {
 	char * filename = "files/maze.txt";
