@@ -1,3 +1,9 @@
+/*!
+ * \file list.c
+ * \brief Représentation de la liste des sucesseurs.
+ * \author PANCHALINGAMOORTHY Gajenthran
+ * \date 2 Décembre 2020
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,7 +16,7 @@
  * le nombre de noeuds et les informations concernant le labyrinthe
  * pour pouvoir stocker l'indice et le nom des salles et des voisins.
  *
- * \param datat ensemble de données du labyrinthe
+ * \param data ensemble de données du labyrinthe
  * \param nbn   nombre de noeuds
  * 
  * \return structure vec_t qui correspond à l'ensemble des vecteurs 
@@ -18,13 +24,14 @@
  */
 vec_t generate_list(data_t * data, int n) {
   vec_t vec;
+
   vec.n = (node_t *)malloc(n * sizeof(*vec.n));
   assert(vec.n);
   vec.nbn = n;
 
   int i, j, k;
   for(i = 0; i < n; i++) {
-    vec.n[i].name = strdup(data[i].room);
+    vec.n[i].name = strdup(data[i].name);
     vec.n[i].in = i;
     vec.n[i].l = (list_t *)malloc(sizeof(*vec.n[i].l));
     vec.n[i].l = NULL; 
@@ -33,7 +40,7 @@ vec_t generate_list(data_t * data, int n) {
   for(i = 0; i < n; i++) {
     for(j = 0; j < data[i].nbn; j++) {
       for(k = 0; k < n; k++) {
-        if(!strcmp(data[k].room, data[i].neigh[j])) {
+        if(!strcmp(data[k].name, data[i].neigh[j])) {
           add_succ(&vec.n[i].l, &vec.n[k], data[i].v[j]);
         }
       }

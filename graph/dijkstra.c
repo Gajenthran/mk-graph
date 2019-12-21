@@ -1,12 +1,18 @@
+/*!
+ * \file dijkstra.c
+ * \brief Algorithme de Dijkstra afin de trouver
+ * le plus court chemin dans un graphe donné.
+ * \author PANCHALINGAMOORTHY Gajenthran
+ * \date 2 Décembre 2020
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
 #include "dijkstra.h"
+#include "graph.h"
 
-#define INFINITY 9999
-static fstack_t ** find_paths(vec_t v, int dep, int * dist, int * pred);
-static fstack_t ** find_paths_mat(mat_t m, int dep, int * dist, int * pred);
+#define INF 9999
 
 /**
  * \brief L'algorithme de Dijkstra permettant de calculer
@@ -19,16 +25,35 @@ static fstack_t ** find_paths_mat(mat_t m, int dep, int * dist, int * pred);
  * \return pile des plus courts chemins selon un vertex
  * de départ
  */
-fstack_t ** dijkstra(vec_t v, int dep) {
+fstack_t ** dijkstra(const graph_t * graph, int dep) {
+  if(graph->model == LIS_E) {
+    return dijkstra_lis(graph, dep);
+  } else {
+    return dijkstra_mat(graph, dep);
+  }
+}
+
+/**
+ * \brief L'algorithme de Dijkstra pour liste de
+ * sucesseurs.
+ *
+ * \param graph représentation du graphe
+ * \param dep vertex de départ
+ *
+ * \return pile des plus courts chemins selon le vertex
+ * de départ
+ */
+fstack_t ** dijkstra_lis(const graph_t * graph, int dep) {
+  int i, j;
+  vec_t v = graph->vec;
+
   int ** cost = (int **)malloc(v.nbn * sizeof(*cost));
   assert(cost);
-
-  int i, j;
   for(i = 0; i < v.nbn; i++) {
     cost[i] = (int *)malloc(v.nbn * sizeof(*cost[i]));
     assert(cost[i]);
     for(j = 0; j < v.nbn; j++) {
-      cost[i][j] = INFINITY;
+      cost[i][j] = INF;
     }
   }
 
@@ -54,7 +79,7 @@ fstack_t ** dijkstra(vec_t v, int dep) {
   c = 1;
 
   while(c < v.nbn - 1) {
-    min_d = INFINITY;
+    min_d = INF;
     next_n = -1;
 
     for(i = 0; i < v.nbn; i++) {
@@ -78,19 +103,30 @@ fstack_t ** dijkstra(vec_t v, int dep) {
     c++;
   }
 
-  return find_paths(v, dep, dist, pred);
+  return find_paths(graph->nbn, dep, dist, pred);
 }
 
-fstack_t ** dijkstra_mat(mat_t m, int dep) {
+/**
+ * \brief L'algorithme de Dijkstra pour la matrice
+ * compacte.
+ *
+ * \param graph représentation du graphe
+ * \param dep vertex de départ
+ *
+ * \return pile des plus courts chemins selon le vertex
+ * de départ
+ */
+fstack_t ** dijkstra_mat(const graph_t * graph, int dep) {
+  int i, j;
+  mat_t m = graph->mat;
+
   int ** cost = (int **)malloc(m.nbn * sizeof(*cost));
   assert(cost);
-
-  int i, j;
   for(i = 0; i < m.nbn; i++) {
     cost[i] = (int *)malloc(m.nbn * sizeof(*cost[i]));
     assert(cost[i]);
     for(j = 0; j < m.nbn; j++) {
-      cost[i][j] = INFINITY;
+      cost[i][j] = INF;
     }
   }
 
@@ -116,7 +152,7 @@ fstack_t ** dijkstra_mat(mat_t m, int dep) {
   c = 1;
 
   while(c < m.nbn - 1) {
-    min_d = INFINITY;
+    min_d = INF;
     next_n = -1;
 
     for(i = 0; i < m.nbn; i++) {
@@ -140,7 +176,7 @@ fstack_t ** dijkstra_mat(mat_t m, int dep) {
     c++;
   }
 
-  return find_paths_mat(m, dep, dist, pred);
+  return find_paths(graph->nbn, dep, dist, pred);
 }
 
 /**
@@ -170,13 +206,14 @@ void rewind_paths(fstack_t ** paths, int n) {
  * \return pile des plus courts chemins selon un vertex
  * de départ
  */
-static fstack_t ** find_paths(vec_t v, int dep, int * dist, int * pred) {
+fstack_t ** find_paths(int nbn, int dep, int * dist, int * pred) {
   fstack_t ** paths;
-  paths = (fstack_t **)malloc(v.nbn * sizeof(*paths));
+  paths = (fstack_t **)malloc(nbn * sizeof(*paths));
   assert(paths);
-  int i, j;
-  for(i = 0; i < v.nbn; i++) {
-    paths[i] = init_stack(i, dist[i]);
+  int i, j, d;
+  for(i = 0; i < nbn; i++) {
+    d = dist[i] > 0 && dist[i] != INF ? dist[i] : -1;
+    paths[i] = init_stack(i, d);
     if(i != dep) {
       push_stack(paths[i], i);
       j = i;
@@ -189,37 +226,6 @@ static fstack_t ** find_paths(vec_t v, int dep, int * dist, int * pred) {
   return paths; 
 }
 
-/**
- * \brief Place les différents plus cours chemin
- * d'un vertex par rapport aux autres vertices
- * en stockant le chemin et le coût de chaque
- * chemin, utilisant une matrice compacte.
- *
- * \param v vecteur de liste de successeurs (graphe)
- * \param dep vertex de départ
- * \param dist distance entre un vertex et les autres
- * \param pred vertex prédit pour arriver au vertex final
- * \return pile des plus courts chemins selon un vertex
- * de départ
- */
-static fstack_t ** find_paths_mat(mat_t m, int dep, int * dist, int * pred) {
-  fstack_t ** paths;
-  paths = (fstack_t **)malloc(m.nbn * sizeof(*paths));
-  assert(paths);
-  int i, j;
-  for(i = 0; i < m.nbn; i++) {
-    paths[i] = init_stack(i, dist[i]);
-    if(i != dep) {
-      push_stack(paths[i], i);
-      j = i;
-      do {
-        j = pred[j];
-        push_stack(paths[i], j);
-      } while(j != dep);
-    }
-  }
-  return paths; 
-}
 
 /** \brief Fonction retournant un nombre aléatoire entre deux
  * intervalles.

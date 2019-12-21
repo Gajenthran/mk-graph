@@ -1,8 +1,15 @@
+/*!
+ * \file parser.c
+ * \brief Parsing des fichiers d'entrée
+ * \author PANCHALINGAMOORTHY Gajenthran
+ * \date 2 Décembre 2020
+ */
 #include <stdio.h>
 #include <stdlib.h>
-#include <assert.h>
 #include <string.h>
+#include <assert.h>
 #include "parser.h"
+
 
 /** \brief Lire le fichiers de données et retourner 
  * son contenu sous forme de chaîne de caractère.
@@ -92,7 +99,7 @@ data_t * tokenize(char * t, int * size) {
     j = 0;
     while(tok != NULL) {
       if(!j) {
-        data[i].room = strdup(tok);
+        data[i].name = strdup(tok);
       } else {
         data[i].neigh[j-1] = strdup(tok);
       }
@@ -119,15 +126,4 @@ data_t * tokenize(char * t, int * size) {
   }
   *size = c;
   return data;
-}
-
-void print_data(data_t * data, int n) {
-  int i, j;
-  for(i = 0; i < n; i++) {
-    printf("%s:", data[i].room);
-    for(j = 0; j < data[i].nbn; j++) {
-      printf("%s (%d),", data[i].neigh[j], data[i].v[j]);
-    }
-    printf("\n");
-  }
 }

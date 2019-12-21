@@ -1,3 +1,9 @@
+/*!
+ * \file mat.h
+ * \brief Header de mat.c
+ * \author PANCHALINGAMOORTHY Gajenthran
+ * \date 2 Décembre 2020
+ */
 #ifndef MAT_H_
 #define MAT_H_
 

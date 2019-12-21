@@ -1,3 +1,9 @@
+/*!
+ * \file fstack.c
+ * \brief Représentation d'une pile (FIFO)
+ * \author PANCHALINGAMOORTHY Gajenthran
+ * \date 2 Décembre 2020
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>

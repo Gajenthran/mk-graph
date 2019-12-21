@@ -2,7 +2,7 @@ CC=gcc
 MACOSX_DEPLOYMENT_TARGET = 10.8
 CFLAGS=-O2 `sdl2-config --cflags`
 LINK=-O2 `sdl2-config --libs` -lSDL2_image -lSDL2_ttf
-SRC=graph.c sdl_driver.c main_sdl.c list.c parser.c dijkstra.c fstack.c
+SRC=graph.c sdl_driver.c main_sdl.c list.c parser.c dijkstra.c fstack.c mat.c
 OBJ=$(SRC:.c=.o)
 
 %.o:	%.c

@@ -1,3 +1,9 @@
+/*!
+ * \file mat.c
+ * \brief Représentation d'une matrice compacte.
+ * \author PANCHALINGAMOORTHY Gajenthran
+ * \date 2 Décembre 2020
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -26,7 +32,7 @@ mat_t generate_mat(data_t * data, int n) {
   for(i = 0; i < n; i++) {
     for(j = 0; j < data[i].nbn; j++) {
       for(k = 0; k < n; k++) {
-        if(!strcmp(data[k].room, data[i].neigh[j])) {
+        if(!strcmp(data[k].name, data[i].neigh[j])) {
           m.c[nel].n = i;
           m.c[nel].s = k;
           m.c[nel].val = data[i].v[j];
@@ -51,9 +57,9 @@ mat_t generate_mat(data_t * data, int n) {
 void print_mat(mat_t m, data_t * data) {
   int i = 0;
   while (i < m.nba) {
-    printf("%s: ", data[m.c[i].n].room);
+    printf("%s: ", data[m.c[i].n].name);
     do {
-      printf("%s(%d), ", data[m.c[i].s].room, 
+      printf("%s(%d), ", data[m.c[i].s].name, 
                              m.c[i].val);
       i++;
     } while(i < m.nba && m.c[i].n == m.c[i-1].n);

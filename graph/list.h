@@ -1,3 +1,9 @@
+/*!
+ * \file list.h
+ * \brief Header de list.c
+ * \author PANCHALINGAMOORTHY Gajenthran
+ * \date 2 Décembre 2020
+ */
 #ifndef LIST_H_
 #define LIST_H_
 
